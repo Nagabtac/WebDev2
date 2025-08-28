@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Create New Car</title>
+    <title>Edit Car</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,13 +12,13 @@
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background-color: white;
+            background-color: #1e1e1e;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         h1 {
-            color: #333;
+            color: #ffffff;
             text-align: center;
             margin-bottom: 30px;
         }
@@ -29,7 +29,7 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            color: #555;
+            color: #ffffff;
         }
         input[type="text"], input[type="number"] {
             width: 100%;
@@ -69,9 +69,9 @@
 </head>
 <body>
     <div class="container">
-        <h1>🚗 Create New Car</h1>
+        <h1>Edit Car</h1>
         
-        <form th:action="@{/create}" th:object="${car}" method="post">
+        <form th:action="@{/edit/{id}(id=${car.id})}" th:object="${car}" method="post">
             <div class="form-group">
                 <label for="make">Make:</label>
                 <input type="text" id="make" th:field="*{make}" required>
@@ -92,9 +92,24 @@
                 <input type="text" id="color" th:field="*{color}" required>
             </div>
             
+            <div class="form-group">
+                <label for="bodyType">Body Type:</label>
+                <input type="text" id="bodyType" th:field="*{bodyType}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="engineType">Engine Type:</label>
+                <input type="text" id="engineType" th:field="*{engineType}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="licensePlate">License Plate:</label>
+                <input type="text" id="licensePlate" th:field="*{licensePlate}" required>
+            </div>
+            
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">➕ Create Car</button>
-                <a href="/" class="btn btn-secondary">❌ Cancel</a>
+                <button type="submit" class="btn btn-primary">Update Car</button>
+                <a href="/" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>

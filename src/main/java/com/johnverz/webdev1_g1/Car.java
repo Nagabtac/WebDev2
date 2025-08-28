@@ -14,6 +14,17 @@ public class Car{
     private String model;
     private int year;
     private String color;
+    private String bodyType;
+    private String engineType;
+    private String licensePlate;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getMake() {
         return make;
@@ -45,5 +56,29 @@ public class Car{
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    public String getBodyType() {
+        return bodyType;
+    }
+
+    public void setBodyType(String bodyType) {
+        this.bodyType = bodyType;
+    }
+
+    public String getEngineType() {
+        return engineType;
+    }
+
+    public void setEngineType(String engineType) {
+        this.engineType = engineType;
+    }
+
+    public String getLicensePlate() {
+        return licensePlate;
+    }
+
+    public void setLicensePlate(String licensePlate) {
+        this.licensePlate = licensePlate;
     }
 }

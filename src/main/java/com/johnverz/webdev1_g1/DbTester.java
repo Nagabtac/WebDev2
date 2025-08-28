@@ -14,16 +14,16 @@ public class DbTester implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Car car = new Car();
-        car.setModel("Vios");
-        car.setYear(2017);
-        car.setMake("Toyota");
-        car.setColor("Grey");
-        carRepository.save(car);
+        // Car car = new Car();
+        // car.setModel("Vios");
+        // car.setYear(2017);
+        // car.setMake("Toyota");
+        // car.setColor("Grey");
+        // carRepository.save(car);
 
-        carRepository.findAll().forEach(carRow -> {
-            System.out.println(carRow.getMake() + " " + carRow.getModel() + " " + carRow.getColor());
-        });
+        // carRepository.findAll().forEach(carRow -> {
+        //     System.out.println(carRow.getMake() + " " + carRow.getModel() + " " + carRow.getColor());
+        // });
 
     }
 }
