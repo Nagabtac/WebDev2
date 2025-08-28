@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create</title>
+</head>
+<body>
+<form action="/save" method="post" th:object="${car}">
+    <input type="text" th:field="*{make}" placeholder="Make">
+    <input type="text" th:field="*{model}" placeholder="Model">
+    <input type="number" th:field="*{year}" placeholder="Year">
+    <input type="text" th:field="*{color}" placeholder="Ngolor">
+    <button>Save</button>
+</form>
+</body>
+</html>
