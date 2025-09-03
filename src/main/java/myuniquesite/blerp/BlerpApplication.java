@@ -1,13 +1,13 @@
-package com.johnverz.webdev1_g1;
+package myuniquesite.blerp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Webdev1G1Application {
+public class BlerpApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(Webdev1G1Application.class, args);
+		SpringApplication.run(BlerpApplication.class, args);
 	}
 
 }

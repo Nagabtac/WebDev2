@@ -1,4 +1,4 @@
-package com.johnverz.webdev1_g1;
+package myuniquesite.blerp;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

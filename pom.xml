@@ -8,11 +8,11 @@
 		<version>3.5.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.johnverz</groupId>
-	<artifactId>webdev1_g1</artifactId>
+	<groupId>myuniquesite</groupId>
+	<artifactId>blerp</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>webdev1_g1</name>
-	<description>webdev1_g1</description>
+	<name>blerp</name>
+	<description>blerp</description>
 	<url/>
 	<licenses>
 		<license/>

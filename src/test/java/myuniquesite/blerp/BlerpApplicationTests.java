@@ -1,10 +1,10 @@
-package com.johnverz.webdev1_g1;
+package myuniquesite.blerp;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class Webdev1G1ApplicationTests {
+class BlerpApplicationTests {
 
 	@Test
 	void contextLoads() {

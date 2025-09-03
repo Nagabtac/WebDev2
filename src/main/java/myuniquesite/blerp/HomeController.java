@@ -1,4 +1,4 @@
-package com.johnverz.webdev1_g1;
+package myuniquesite.blerp;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
