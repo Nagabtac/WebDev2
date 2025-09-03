@@ -21,6 +21,10 @@ public class HomeController {
     @GetMapping("/")
     public String home(Model model) {
         List<Car> cars = carRepository.findAll();
+        System.out.println("Found " + cars.size() + " cars in database");
+        for (Car car : cars) {
+            System.out.println("Car: " + car.getMake() + " " + car.getModel() + " (ID: " + car.getId() + ")");
+        }
         model.addAttribute("cars", cars);
         return "index";
     }
@@ -35,7 +39,10 @@ public class HomeController {
     // Handle form submission to add new car
     @PostMapping("/add")
     public String addCar(@ModelAttribute Car car, RedirectAttributes redirectAttributes) {
-        carRepository.save(car);
+        System.out.println("Saving car: " + car.getMake() + " " + car.getModel());
+        Car savedCar = carRepository.save(car);
+        System.out.println("Car saved with ID: " + savedCar.getId());
+        
         // Export to CSV after adding
         List<Car> cars = carRepository.findAll();
         csvService.exportToCsv(cars);
