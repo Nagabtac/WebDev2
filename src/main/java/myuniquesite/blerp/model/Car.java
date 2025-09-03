@@ -1,4 +1,4 @@
-package myuniquesite.blerp;
+package myuniquesite.blerp.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

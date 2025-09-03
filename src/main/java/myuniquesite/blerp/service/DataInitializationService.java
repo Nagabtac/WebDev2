@@ -1,8 +1,11 @@
-package myuniquesite.blerp;
+package myuniquesite.blerp.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
+
+import myuniquesite.blerp.model.Car;
+import myuniquesite.blerp.repository.CarRepository;
 
 import java.util.List;
 

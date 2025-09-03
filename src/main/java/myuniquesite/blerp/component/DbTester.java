@@ -1,7 +1,9 @@
-package myuniquesite.blerp;
+package myuniquesite.blerp.component;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+
+import myuniquesite.blerp.repository.CarRepository;
 
 @Component
 public class DbTester implements CommandLineRunner {
