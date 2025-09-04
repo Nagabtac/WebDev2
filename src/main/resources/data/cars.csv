@@ -3,3 +3,5 @@ ID,Make,Model,Year,Color,Body Type,Engine Type,License Plate
 6,toyota,Corolla,2020,black,Sedan,Petrol,ABC 123
 7,toyota,hfhfh,2030,black,Sedan,Petrol,ABC 123
 8,BMW,coupe,2024,blue,sedan,gasoline,123 ABC
+10,Toyota,Corolla,2020,red,Sedan,soda,ABC 123
+18,Toyota,,1900,,,,

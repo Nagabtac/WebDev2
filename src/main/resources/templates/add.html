@@ -79,38 +79,47 @@
         <form th:action="@{/add}" th:object="${car}" method="post">
             <div class="form-group">
                 <label for="make">Make:</label>
-                <input type="text" id="make" th:field="*{make}" required>
+                <input type="text" id="make" th:field="*{make}" >
+                <div th:if="${#fields.hasErrors('make')}" th:errors="*{make}" style="color: red;"></div>
             </div>
             
             <div class="form-group">
                 <label for="model">Model:</label>
-                <input type="text" id="model" th:field="*{model}" required>
+                <input type="text" id="model" th:field="*{model}" >
+                <div th:if="${#fields.hasErrors('model')}" th:errors="*{model}" style="color: red;"></div>
             </div>
             
             <div class="form-group">
                 <label for="year">Year:</label>
-                <input type="number" id="year" th:field="*{year}" min="1900" max="2030" required>
+                <input type="number" id="year" th:field="*{year}" min="1900" max="2030" >
+                <div th:if="${#fields.hasErrors('year')}" th:errors="*{year}" style="color: red;"></div>
             </div>
             
             <div class="form-group">
                 <label for="color">Color:</label>
-                <input type="text" id="color" th:field="*{color}" required>
+                <input type="text" id="color" th:field="*{color}" >
+                <div th:if="${#fields.hasErrors('color')}" th:errors="*{color}" style="color: red;"></div>
             </div>
             
             <div class="form-group">
                 <label for="bodyType">Body Type:</label>
-                <input type="text" id="bodyType" th:field="*{bodyType}" required>
+                <input type="text" id="bodyType" th:field="*{bodyType}" >
+                <div th:if="${#fields.hasErrors('bodyType')}" th:errors="*{bodyType}" style="color: red;"></div>
             </div>
             
             <div class="form-group">
                 <label for="engineType">Engine Type:</label>
-                <input type="text" id="engineType" th:field="*{engineType}" required>
+                <input type="text" id="engineType" th:field="*{engineType}" >
+                <div th:if="${#fields.hasErrors('engineType')}" th:errors="*{engineType}" style="color: red;"></div>
             </div>
             
             <div class="form-group">
                 <label for="licensePlate">License Plate:</label>
-                <input type="text" id="licensePlate" th:field="*{licensePlate}" required>
+                <input type="text" id="licensePlate" th:field="*{licensePlate}" >
+                <div th:if="${#fields.hasErrors('licensePlate')}" th:errors="*{licensePlate}" style="color: red;"></div>
             </div>
+            
+            
             
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Add Car</button>

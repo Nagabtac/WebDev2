@@ -5,10 +5,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.validation.BindingResult;
+import jakarta.validation.Valid;
 
 import myuniquesite.blerp.model.Car;
+import myuniquesite.blerp.dto.CarDTO;
 import myuniquesite.blerp.repository.CarRepository;
 import myuniquesite.blerp.service.CsvService;
+import myuniquesite.blerp.exception.ResourceNotFoundException;
+
 
 import java.util.List;
 
@@ -36,13 +41,37 @@ public class HomeController {
     // Show form to add new car
     @GetMapping("/add")
     public String showAddForm(Model model) {
-        model.addAttribute("car", new Car());
+        model.addAttribute("car", new CarDTO());
         return "add";
     }
 
     // Handle form submission to add new car
     @PostMapping("/add")
-    public String addCar(@ModelAttribute Car car, RedirectAttributes redirectAttributes) {
+    public String addCar(@Valid @ModelAttribute("car") CarDTO carDTO, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        System.out.println("=== VALIDATION DEBUG ===");
+        System.out.println("Make: '" + carDTO.getMake() + "'");
+        System.out.println("Model: '" + carDTO.getModel() + "'");
+        System.out.println("Year: " + carDTO.getYear());
+        System.out.println("Color: '" + carDTO.getColor() + "'");
+        System.out.println("Validation errors: " + bindingResult.hasErrors());
+        if (bindingResult.hasErrors()) {
+            System.out.println("Errors: " + bindingResult.getAllErrors());
+            for (var error : bindingResult.getAllErrors()) {
+                System.out.println("Error: " + error.getDefaultMessage());
+            }
+            return "add";
+        }
+        
+        // Convert DTO to Entity
+        Car car = new Car();
+        car.setMake(carDTO.getMake());
+        car.setModel(carDTO.getModel());
+        car.setYear(carDTO.getYear());
+        car.setColor(carDTO.getColor());
+        car.setBodyType(carDTO.getBodyType());
+        car.setEngineType(carDTO.getEngineType());
+        car.setLicensePlate(carDTO.getLicensePlate());
+        
         System.out.println("Saving car: " + car.getMake() + " " + car.getModel());
         Car savedCar = carRepository.save(car);
         System.out.println("Car saved with ID: " + savedCar.getId());
@@ -64,7 +93,10 @@ public class HomeController {
 
     // Handle form submission to update car
     @PostMapping("/edit/{id}")
-    public String updateCar(@PathVariable int id, @ModelAttribute Car car, RedirectAttributes redirectAttributes) {
+    public String updateCar(@PathVariable int id, @Valid @ModelAttribute("car") Car car, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        if (bindingResult.hasErrors()) {
+            return "edit";
+        }
         car.setId(id);
         carRepository.save(car);
         // Export to CSV after updating
@@ -85,5 +117,11 @@ public class HomeController {
         return "redirect:/";
     }
 
+    @GetMapping("/view/{id}")
+    public String view(@PathVariable int id, Model model){
+        Car car = carRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Car", id));
+        model.addAttribute("car", car);
+        return "view";
+    }
 
 }

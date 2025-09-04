@@ -80,37 +80,46 @@
             <div class="form-group">
                 <label for="make">Make:</label>
                 <input type="text" id="make" th:field="*{make}" required>
+                <div th:if="${#fields.hasErrors('make')}" th:errors="*{make}"></div>
             </div>
             
             <div class="form-group">
                 <label for="model">Model:</label>
                 <input type="text" id="model" th:field="*{model}" required>
+                <div th:if="${#fields.hasErrors('model')}" th:errors="*{model}"></div>
             </div>
             
             <div class="form-group">
                 <label for="year">Year:</label>
                 <input type="number" id="year" th:field="*{year}" min="1900" max="2030" required>
+                <div th:if="${#fields.hasErrors('year')}" th:errors="*{year}"></div>
             </div>
             
             <div class="form-group">
                 <label for="color">Color:</label>
                 <input type="text" id="color" th:field="*{color}" required>
+                <div th:if="${#fields.hasErrors('color')}" th:errors="*{color}"></div>
             </div>
             
             <div class="form-group">
                 <label for="bodyType">Body Type:</label>
                 <input type="text" id="bodyType" th:field="*{bodyType}" required>
+                <div th:if="${#fields.hasErrors('bodyType')}" th:errors="*{bodyType}"></div>
             </div>
             
             <div class="form-group">
                 <label for="engineType">Engine Type:</label>
                 <input type="text" id="engineType" th:field="*{engineType}" required>
+                <div th:if="${#fields.hasErrors('engineType')}" th:errors="*{engineType}"></div>
             </div>
             
             <div class="form-group">
                 <label for="licensePlate">License Plate:</label>
                 <input type="text" id="licensePlate" th:field="*{licensePlate}" required>
+                <div th:if="${#fields.hasErrors('licensePlate')}" th:errors="*{licensePlate}"></div>
             </div>
+            
+            
             
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Update Car</button>

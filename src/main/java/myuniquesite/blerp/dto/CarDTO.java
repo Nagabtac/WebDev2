@@ -1,30 +1,33 @@
-package myuniquesite.blerp.model;
+package myuniquesite.blerp.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;   
+public class CarDTO{
 
-@Entity
-public class Car{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @NotEmpty(message ="Make is required")
     private String make;
+
+    @NotEmpty(message = "Model is required")
     private String model;
-    private int year;
+
+    @NotNull(message = "Year is required")
+    @Min(value = 1900, message = "Year must be at least 1900")
+    @Max(value = 2025, message = "Year must be at most 2025")
+    private Integer year;
+    @NotEmpty(message = "Color is required")
     private String color;
+    
+    @NotEmpty(message = "Body Type is required")
     private String bodyType;
+    
+    @NotEmpty(message = "Engine Type is required")
     private String engineType;
+    
+    @NotEmpty(message = "License Plate is required")
     private String licensePlate;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String getMake() {
         return make;
@@ -42,11 +45,11 @@ public class Car{
         this.model = model;
     }
 
-    public int getYear() {
+    public Integer getYear() {
         return year;
     }
 
-    public void setYear(int year) {
+    public void setYear(Integer year) {
         this.year = year;
     }
 
@@ -81,5 +84,4 @@ public class Car{
     public void setLicensePlate(String licensePlate) {
         this.licensePlate = licensePlate;
     }
-
 }

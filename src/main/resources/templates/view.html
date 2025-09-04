@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Car Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #2c2c2c;
+        }
+        .car-details {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #f8f8f8;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #000000;
+        }
+        .car-details h2 {
+            color: #000000;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .car-details p {
+            margin: 10px 0;
+            font-size: 16px;
+            color: #000000;
+        }
+        .back-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            border: 1px solid #000000;
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .btn:hover {
+            background-color: #000000;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="car-details">
+        <h2>Car Details</h2>
+        <p><strong>Make:</strong> <span th:text="${car.make}"></span></p>
+        <p><strong>Model:</strong> <span th:text="${car.model}"></span></p>
+        <p><strong>Year:</strong> <span th:text="${car.year}"></span></p>
+        <p><strong>Color:</strong> <span th:text="${car.color}"></span></p>
+        <p><strong>Body Type:</strong> <span th:text="${car.bodyType}"></span></p>
+        <p><strong>Engine Type:</strong> <span th:text="${car.engineType}"></span></p>
+        <p><strong>License Plate:</strong> <span th:text="${car.licensePlate}"></span></p>
+        <div class="back-link">
+            <a class="btn" th:href="@{/}">← Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>
