@@ -108,6 +108,9 @@
                     
                     <div style="text-align: center; margin-bottom: 20px;">
                         <a href="/add" class="btn btn-primary">Add New Car</a>
+                        <form th:action="@{/logout}" method="post" style="display: inline;">
+                            <button type="submit" class="btn btn-danger">Logout</button>
+                        </form>
                     </div>
 
         <table>

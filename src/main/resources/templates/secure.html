@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Secure</title></head>
+<body>
+<h1>Secure Page - Only for Logged In Users</h1>
+<p th:text="'Hello, ' + ${#httpServletRequest.remoteUser}"></p>
+<a th:href="@{/logout}">Logout</a>
+</body>
+</html>

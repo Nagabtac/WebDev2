@@ -27,7 +27,7 @@ public class HomeController {
     private CsvService csvService;
 
     // Display all cars on the main page
-    @GetMapping("/")
+    @GetMapping({"/", "/index"})
     public String home(Model model) {
         List<Car> cars = carRepository.findAll();
         System.out.println("Found " + cars.size() + " cars in database");
@@ -43,6 +43,13 @@ public class HomeController {
     public String showAddForm(Model model) {
         model.addAttribute("car", new CarDTO());
         return "add";
+    }
+
+    // Show form to create new car
+    @GetMapping("/create")
+    public String showCreateForm(Model model) {
+        model.addAttribute("car", new CarDTO());
+        return "create";
     }
 
     // Handle form submission to add new car
@@ -80,6 +87,44 @@ public class HomeController {
         List<Car> cars = carRepository.findAll();
         csvService.exportToCsv(cars);
         redirectAttributes.addFlashAttribute("message", "Car added successfully! CSV updated automatically.");
+        return "redirect:/";
+    }
+
+    // Handle form submission to create new car
+    @PostMapping("/create")
+    public String createCar(@Valid @ModelAttribute("car") CarDTO carDTO, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        System.out.println("=== VALIDATION DEBUG ===");
+        System.out.println("Make: '" + carDTO.getMake() + "'");
+        System.out.println("Model: '" + carDTO.getModel() + "'");
+        System.out.println("Year: " + carDTO.getYear());
+        System.out.println("Color: '" + carDTO.getColor() + "'");
+        System.out.println("Validation errors: " + bindingResult.hasErrors());
+        if (bindingResult.hasErrors()) {
+            System.out.println("Errors: " + bindingResult.getAllErrors());
+            for (var error : bindingResult.getAllErrors()) {
+                System.out.println("Error: " + error.getDefaultMessage());
+            }
+            return "create";
+        }
+        
+        // Convert DTO to Entity
+        Car car = new Car();
+        car.setMake(carDTO.getMake());
+        car.setModel(carDTO.getModel());
+        car.setYear(carDTO.getYear());
+        car.setColor(carDTO.getColor());
+        car.setBodyType(carDTO.getBodyType());
+        car.setEngineType(carDTO.getEngineType());
+        car.setLicensePlate(carDTO.getLicensePlate());
+        
+        System.out.println("Saving car: " + car.getMake() + " " + car.getModel());
+        Car savedCar = carRepository.save(car);
+        System.out.println("Car saved with ID: " + savedCar.getId());
+        
+        // Export to CSV after adding
+        List<Car> cars = carRepository.findAll();
+        csvService.exportToCsv(cars);
+        redirectAttributes.addFlashAttribute("message", "Car created successfully! CSV updated automatically.");
         return "redirect:/";
     }
 
