@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ExAm</title>
+</head>
+<body>
+<main>
+    <table>
+
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="Employee: ${Employees}" >
+            <td th:text="${Employee.ID}"></td>
+            <td th:text="${Employee.Name}"></td>
+            <td th:text="${Employee.Email}"></td>
+            <td>
+                <a th:href="@{/view/{id}(id=${Employee.id})}" class="button-view">View</a>
+                <a th:href="@{/edit/{id}(id=${Employee.id})}" class="button-edit">Edit</a>
+                <a th:href="@{/delete/{id}(id=${Employee.id})}" class="button-delete">Delete</a>
+            </td>
+        </tr>
+
+
+        </tbody>
+    </table>
+</main>
+</body>
+</html>
