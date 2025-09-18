@@ -3,9 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Document</title>
+    <title>Edit Employee</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #000; background: #fff; margin: 2rem; }
+        a.button, button { display: inline-block; padding: 0.5rem 0.75rem; border: 1px solid #000; background: #fff; color: #000; text-decoration: none; cursor: pointer; }
+        a.button:hover, button:hover { background: #000; color: #fff; }
+        form { max-width: 480px; }
+        label { display: block; margin-top: 1rem; }
+        input { width: 100%; padding: 0.5rem; border: 1px solid #000; }
+        .actions { margin-top: 1rem; }
+    </style>
 </head>
 <body>
+<main>
+    <h1>Edit Employee</h1>
+    <form th:action="@{'/edit/' + ${employee.id}}" method="post">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" th:value="${employee.name}" required>
 
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" th:value="${employee.email}" required>
+
+        <div class="actions">
+            <button type="submit">Save</button>
+            <a class="button" th:href="@{/}">Cancel</a>
+        </div>
+    </form>
+</main>
 </body>
 </html>

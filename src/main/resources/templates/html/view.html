@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>View Employee</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #000; background: #fff; margin: 2rem; }
+        a.button, button { display: inline-block; padding: 0.5rem 0.75rem; border: 1px solid #000; background: #fff; color: #000; text-decoration: none; cursor: pointer; }
+        a.button:hover, button:hover { background: #000; color: #fff; }
+        .meta { margin: 1rem 0; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Employee Details</h1>
+    <div>
+        <p><strong>ID:</strong> <span th:text="${employee != null} ? ${employee.id} : 'Not found'"></span></p>
+        <p><strong>Name:</strong> <span th:text="${employee != null} ? ${employee.name} : 'Not found'"></span></p>
+        <p><strong>Email:</strong> <span th:text="${employee != null} ? ${employee.email} : 'Not found'"></span></p>
+    </div>
+    <a class="button" th:href="@{/}">Back</a>
+</main>
+</body>
+</html>
+
+

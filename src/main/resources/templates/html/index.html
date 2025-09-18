@@ -3,10 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ExAm</title>
+    <title>Employees</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #000; background: #fff; margin: 2rem; }
+        h1 { margin-bottom: 1rem; }
+        a.button, button { display: inline-block; padding: 0.5rem 0.75rem; border: 1px solid #000; background: #fff; color: #000; text-decoration: none; cursor: pointer; }
+        a.button:hover, button:hover { background: #000; color: #fff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { border: 1px solid #000; padding: 0.5rem; text-align: left; }
+        thead { background: #000; color: #fff; }
+        .actions a { margin-right: 0.5rem; }
+    </style>
 </head>
 <body>
 <main>
+    <h1>Employees</h1>
+    <a class="button" th:href="@{/create}">Add New Employee</a>
     <table>
 
         <thead>
@@ -14,18 +26,19 @@
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
+            <th>Actions</th>
         </tr>
         </thead>
 
         <tbody>
-        <tr th:each="Employee: ${Employees}" >
-            <td th:text="${Employee.ID}"></td>
-            <td th:text="${Employee.Name}"></td>
-            <td th:text="${Employee.Email}"></td>
-            <td>
-                <a th:href="@{/view/{id}(id=${Employee.id})}" class="button-view">View</a>
-                <a th:href="@{/edit/{id}(id=${Employee.id})}" class="button-edit">Edit</a>
-                <a th:href="@{/delete/{id}(id=${Employee.id})}" class="button-delete">Delete</a>
+        <tr th:each="employee : ${employees}">
+            <td th:text="${employee.id}"></td>
+            <td th:text="${employee.name}"></td>
+            <td th:text="${employee.email}"></td>
+            <td class="actions">
+                <a th:href="@{/view/{id}(id=${employee.id})}" class="button">View</a>
+                <a th:href="@{/edit/{id}(id=${employee.id})}" class="button">Edit</a>
+                <a th:href="@{/delete/{id}(id=${employee.id})}" class="button">Delete</a>
             </td>
         </tr>
 
