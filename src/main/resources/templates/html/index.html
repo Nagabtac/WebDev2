@@ -18,7 +18,12 @@
 <body>
 <main>
     <h1>Employees</h1>
-    <a class="button" th:href="@{/create}">Add New Employee</a>
+    <div style="margin-bottom: 1rem;">
+        <a class="button" th:href="@{/create}">Add New Employee</a>
+        <form th:action="@{/logout}" method="post" style="display: inline; margin-left: 1rem;">
+            <button type="submit" class="button">Logout</button>
+        </form>
+    </div>
     <table>
 
         <thead>

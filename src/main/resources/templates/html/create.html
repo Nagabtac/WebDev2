@@ -17,12 +17,14 @@
 <body>
 <main>
     <h1>Create Employee</h1>
-    <form th:action="@{/create}" method="post">
+    <form th:action="@{/create}" th:object="${employee}" method="post">
         <label for="name">Name</label>
-        <input id="name" name="name" type="text" required>
+        <input id="name" th:field="*{name}" type="text" >
+        <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
 
         <label for="email">Email</label>
-        <input id="email" name="email" type="email" required>
+        <input id="email" th:field="*{email}" type="email" >
+        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
 
         <div class="actions">
             <button type="submit">Create</button>

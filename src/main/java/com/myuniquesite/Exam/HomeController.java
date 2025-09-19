@@ -8,7 +8,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
+import com.myuniquesite.Exam.exception.ResourceNotFoundException;
 
 @Controller
 public class HomeController {
@@ -39,6 +42,7 @@ public class HomeController {
 
     @GetMapping("/create")//make a new employee
     public String create(Model model){
+        model.addAttribute("employee", new Employee());
         return "html/create";
     }
 
@@ -49,46 +53,54 @@ public class HomeController {
 
     @GetMapping("/view/{id}")
     public String view(@PathVariable("id") int id, Model model) {
-        Employee employee = employeeRepository.findById(id).orElse(null);
+        Employee employee = employeeRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
         model.addAttribute("employee", employee);
         return "html/view";
     }
 
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable("id") int id, Model model) {
-        Employee employee = employeeRepository.findById(id).orElse(null);
+        Employee employee = employeeRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
         model.addAttribute("employee", employee);
         return "html/update";
     }
 
     @PostMapping("/edit/{id}")
     public String editSubmit(@PathVariable("id") int id,
-                             @RequestParam("name") String name,
-                             @RequestParam("email") String email) {
-        Employee employee = employeeRepository.findById(id).orElse(null);
-        if (employee != null) {
-            employee.setName(name);
-            employee.setEmail(email);
-            employeeRepository.save(employee);
+                             @Valid @ModelAttribute("employee") Employee form,
+                             BindingResult bindingResult,
+                             Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("employee", form);
+            return "html/update";
         }
+        Employee employee = employeeRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
+        employee.setName(form.getName());
+        employee.setEmail(form.getEmail());
+        employeeRepository.save(employee);
         return "redirect:/";
     }
 
     @PostMapping("/create")
-    public String createSubmit(@RequestParam("name") String name,
-                               @RequestParam("email") String email) {
-        Employee employee = new Employee();
-        employee.setName(name);
-        employee.setEmail(email);
+    public String createSubmit(@Valid @ModelAttribute("employee") Employee employee,
+                               BindingResult bindingResult,
+                               Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("employee", employee);
+            return "html/create";
+        }
         employeeRepository.save(employee);
         return "redirect:/";
     }
 
     @GetMapping("/delete/{id}")
     public String delete(@PathVariable("id") int id) {
-        if (employeeRepository.existsById(id)) {
-            employeeRepository.deleteById(id);
-        }
+        Employee employee = employeeRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
+        employeeRepository.delete(employee);
         return "redirect:/";
     }
 }

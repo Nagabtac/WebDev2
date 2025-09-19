@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Edit Employee</title>
+    <title>Register</title>
     <style>
         body { font-family: Arial, sans-serif; color: #000; background: #fff; margin: 2rem; }
         a.button, button { display: inline-block; padding: 0.5rem 0.75rem; border: 1px solid #000; background: #fff; color: #000; text-decoration: none; cursor: pointer; }
@@ -16,19 +16,19 @@
 </head>
 <body>
 <main>
-    <h1>Edit Employee</h1>
-    <form th:action="@{'/edit/' + ${employee.id}}" th:object="${employee}" method="post">
-        <label for="name">Name</label>
-        <input id="name" th:field="*{name}" type="text" required>
-        <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+    <h1>Register</h1>
+    <div th:if="${errorMessage}" style="color: red; margin-bottom: 1rem;" th:text="${errorMessage}"></div>
+    <div th:if="${successMessage}" style="color: green; margin-bottom: 1rem;" th:text="${successMessage}"></div>
+    <form th:action="@{/register}" method="post">
+        <label for="username">Username:</label>
+        <input id="username" name="username" type="text" required>
 
-        <label for="email">Email</label>
-        <input id="email" th:field="*{email}" type="email" required>
-        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+        <label for="password">Password:</label>
+        <input id="password" name="password" type="password" required>
 
         <div class="actions">
-            <button type="submit">Save</button>
-            <a class="button" th:href="@{/}">Cancel</a>
+            <button type="submit">Register</button>
+            <a class="button" th:href="@{/login}">Login</a>
         </div>
     </form>
 </main>

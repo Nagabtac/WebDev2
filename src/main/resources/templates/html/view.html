@@ -15,9 +15,9 @@
 <main>
     <h1>Employee Details</h1>
     <div>
-        <p><strong>ID:</strong> <span th:text="${employee != null} ? ${employee.id} : 'Not found'"></span></p>
-        <p><strong>Name:</strong> <span th:text="${employee != null} ? ${employee.name} : 'Not found'"></span></p>
-        <p><strong>Email:</strong> <span th:text="${employee != null} ? ${employee.email} : 'Not found'"></span></p>
+        <p><strong>ID:</strong> <span th:text="${employee.id}"></span></p>
+        <p><strong>Name:</strong> <span th:text="${employee.name}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${employee.email}"></span></p>
     </div>
     <a class="button" th:href="@{/}">Back</a>
 </main>
