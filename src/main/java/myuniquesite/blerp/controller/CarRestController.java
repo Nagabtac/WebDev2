@@ -13,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/cars")
+@CrossOrigin(origins = "*") // ✅ Allow requests from all origins (OK for dev)
 public class CarRestController {
 
     private final CarService carService;
