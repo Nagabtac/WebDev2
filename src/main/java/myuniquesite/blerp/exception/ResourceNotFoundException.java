@@ -1,14 +1,17 @@
 package myuniquesite.blerp.exception;
 
 public class ResourceNotFoundException extends RuntimeException {
-    private final Integer resourceId;
+    private final Long resourceId;
 
-    public ResourceNotFoundException(String message, Integer resourceId) {
-        super(message);
+    public ResourceNotFoundException(String resourceName, Long resourceId) {
+        super(resourceName + " with ID " + resourceId + " not found.");
         this.resourceId = resourceId;
     }
 
-    public Integer getResourceId() {
+
+
+    public Long getResourceId() {
         return resourceId;
     }
 }
+

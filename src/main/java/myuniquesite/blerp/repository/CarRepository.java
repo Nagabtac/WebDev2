@@ -5,5 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import myuniquesite.blerp.model.Car;
 
-public interface CarRepository extends JpaRepository<Car, Integer> {
+
+public interface CarRepository extends JpaRepository<Car, Long> {
 }
