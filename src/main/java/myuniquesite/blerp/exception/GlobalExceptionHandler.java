@@ -1,20 +1,50 @@
 package myuniquesite.blerp.exception;
 
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+/**
+ * Global exception handling for the application.
+ * The generic exception handler is now explicitly configured to return JSON 
+ * (using the OutputStream) to prevent the conflict with Thymeleaf's use of the Writer.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public String handleResourceNotFound(ResourceNotFoundException ex, Model model) {
-        model.addAttribute("message", ex.getMessage());
-        return "error/error";
-    }
 
+    /**
+     * Handles ResourceNotFoundException, returning a 404 Not Found response as structured JSON.
+     * This handler ensures API-style errors use the OutputStream.
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiError> handleResourceNotFound(ResourceNotFoundException ex) {
+        ApiError apiError = new ApiError("Resource Not Found", ex.getMessage());
+        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    }
+    
+    /**
+     * Catches all other generic exceptions and forces a structured JSON response (500 Internal Server Error).
+     * * KEY FIX: By returning ResponseEntity and annotating with @ResponseBody, we guarantee 
+     * that Spring uses the binary stream (OutputStream) to serialize the ApiError object to JSON.
+     * This prevents the DispatcherServlet from trying to use the Thymeleaf View Resolver, 
+     * thus avoiding the call to getWriter() that causes the IllegalStateException.
+     */
     @ExceptionHandler(Exception.class)
-    public String handleGenericException(Exception ex, Model model) {
-        model.addAttribute("message", "Unexpected error: " + ex.getMessage());
-        return "error/error";
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody 
+    public ResponseEntity<ApiError> handleGenericException(Exception ex) {
+        // Log the error details for crucial debugging
+        System.err.println("CRITICAL UNHANDLED EXCEPTION: " + ex.getMessage());
+        ex.printStackTrace(); 
+
+        ApiError apiError = new ApiError(
+            "Internal Server Error", 
+            "An unexpected error occurred. Please check server logs for details. Exception: " + ex.getClass().getSimpleName()
+        );
+        
+        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

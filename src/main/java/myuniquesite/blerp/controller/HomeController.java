@@ -142,7 +142,7 @@ public class HomeController {
         if (bindingResult.hasErrors()) {
             return "edit";
         }
-        car.setId(id);
+        car.setId((long) id);
         carRepository.save(car);
         // Export to CSV after updating
         List<Car> cars = carRepository.findAll();

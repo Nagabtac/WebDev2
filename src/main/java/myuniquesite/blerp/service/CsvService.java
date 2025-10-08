@@ -65,7 +65,7 @@ public class CsvService {
                 if (fields.size() >= 8) {
                     try {
                         Car car = new Car();
-                        car.setId(Integer.parseInt(fields.get(0).trim()));
+                        car.setId(Long.parseLong(fields.get(0).trim()));
                         car.setMake(fields.get(1).trim());
                         car.setModel(fields.get(2).trim());
                         car.setYear(Integer.parseInt(fields.get(3).trim()));

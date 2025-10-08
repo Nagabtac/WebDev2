@@ -3,7 +3,6 @@ package myuniquesite.blerp.config;
 import myuniquesite.blerp.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,30 +23,42 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setPasswordEncoder(passwordEncoder());
-        authProvider.setUserDetailsService(userDetailsService);
-        return authProvider;
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // Completely disable CSRF for all requests
+            .csrf(csrf -> csrf.disable())
+            
+            // Authorization rules
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/register", "/css/**").permitAll()
+                // ✅ API endpoints are public
+                .requestMatchers("/api/**").permitAll()
+                
+                // ✅ Index page is public
+                .requestMatchers("/", "/index").permitAll()
+                
+                // Public web pages/resources (login/register only)
+                .requestMatchers("/login", "/register", "/css/**").permitAll()
+                
+                // All other requests require authentication
                 .anyRequest().authenticated()
             )
+            
+            // Web login for website only
             .formLogin(login -> login
                 .loginPage("/login")
                 .defaultSuccessUrl("/", true)
                 .permitAll()
             )
+            
+            // Logout for website only
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/")
-                .permitAll())
-            .authenticationProvider(authProvider());
+                .permitAll()
+            )
+            
+            // Use UserDetailsService directly (modern approach)
+            .userDetailsService(userDetailsService);
 
         return http.build();
     }
