@@ -1,4 +1,4 @@
 package myuniquesite.blerp.dto;
 
-public record AuthResponse(String token, String username, Long expiresAt) {
+public record AuthResponse(String token, String username, String message, Long expiresAt) {
 }

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>JWT Authentication Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/auth.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">JWT Authentication Test Page</h1>
+        
+        <!-- Authentication Status -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Authentication Status</h2>
+            <div id="authStatus" class="text-lg">
+                <span id="statusText">Checking...</span>
+            </div>
+            <div class="mt-4">
+                <button id="loginBtn" onclick="authManager.showLoginModal()" 
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mr-2">
+                    Login
+                </button>
+                <button id="logoutBtn" onclick="authManager.logout()" 
+                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 hidden">
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- API Test Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">API Test</h2>
+            <div class="space-y-4">
+                <button onclick="testCarsAPI()" 
+                        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    Test Cars API
+                </button>
+                <button onclick="testAuthAPI()" 
+                        class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                    Test Auth API
+                </button>
+            </div>
+            <div id="apiResult" class="mt-4 p-4 bg-gray-100 rounded hidden">
+                <pre id="apiOutput"></pre>
+            </div>
+        </div>
+
+        <!-- Message Display -->
+        <div id="message" class="hidden mb-6"></div>
+    </div>
+
+    <!-- Include Auth Modals -->
+    <div th:replace="auth-modals"></div>
+
+    <script>
+        // Update authentication status
+        function updateAuthStatus() {
+            const statusText = document.getElementById('statusText');
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            if (authManager.isAuthenticated()) {
+                statusText.textContent = `Logged in as: ${authManager.getUsername()}`;
+                statusText.className = 'text-green-600 font-semibold';
+                loginBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+            } else {
+                statusText.textContent = 'Not logged in';
+                statusText.className = 'text-red-600 font-semibold';
+                loginBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+            }
+        }
+
+        // Test Cars API
+        async function testCarsAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            const output = document.getElementById('apiOutput');
+            
+            try {
+                const response = await fetch('http://localhost:1000/api/cars', {
+                    headers: authManager.getAuthHeaders()
+                });
+                
+                const data = await response.json();
+                output.textContent = JSON.stringify(data, null, 2);
+                resultDiv.classList.remove('hidden');
+            } catch (error) {
+                output.textContent = 'Error: ' + error.message;
+                resultDiv.classList.remove('hidden');
+            }
+        }
+
+        // Test Auth API
+        async function testAuthAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            const output = document.getElementById('apiOutput');
+            
+            try {
+                const response = await fetch('http://localhost:1000/api/auth/validate', {
+                    headers: authManager.getAuthHeaders()
+                });
+                
+                const data = await response.json();
+                output.textContent = JSON.stringify(data, null, 2);
+                resultDiv.classList.remove('hidden');
+            } catch (error) {
+                output.textContent = 'Error: ' + error.message;
+                resultDiv.classList.remove('hidden');
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthStatus();
+        });
+
+        // Override the updateAuthUI function to also update our test page
+        const originalUpdateAuthUI = updateAuthUI;
+        updateAuthUI = function() {
+            originalUpdateAuthUI();
+            updateAuthStatus();
+        };
+    </script>
+</body>
+</html>

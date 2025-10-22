@@ -3,6 +3,7 @@ package myuniquesite.blerp.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -12,14 +13,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 public class SecurityConfig {
-    private final UserDetailsService customUserDetailsService;
-    public SecurityConfig(UserDetailsService userDetailsService) {
-        this.customUserDetailsService = userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
     @Bean
@@ -33,8 +36,8 @@ public class SecurityConfig {
             UserDetailsService userDetailsService,
             PasswordEncoder passwordEncoder) {
         var authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder);
+        authProvider.setUserDetailsService(userDetailsService);
         return new ProviderManager(authProvider);
     }
 
@@ -51,14 +54,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/api/auth/**").permitAll(); // Public auth endpoints
                     auth.requestMatchers("/api/public/**").permitAll(); // Other public API endpoints
+                    auth.requestMatchers(HttpMethod.GET, "/api/cars/**").permitAll(); // Allow public read access
+                    auth.requestMatchers(HttpMethod.POST, "/api/cars/**").authenticated(); // Require auth for create
+                    auth.requestMatchers(HttpMethod.PUT, "/api/cars/**").authenticated(); // Require auth for update
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/cars/**").authenticated(); // Require auth for delete
                     //auth.requestMatchers("/api/admin/**").hasRole("ADMIN"); // Admin-only API
                     //auth.requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN"); // User/Admin API
                     auth.anyRequest().authenticated(); // All other API endpoints require authentication
                 })
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless
-                .oauth2ResourceServer(oauth2 ->
-                        oauth2.jwt(withDefaults())) // Enable JWT authentication
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter
                 .build();
     }
 

@@ -118,4 +118,10 @@ public class HomeController {
         model.addAttribute("car", car);
         return "view";
     }
+
+    // Test authentication page
+    @GetMapping("/test-auth")
+    public String testAuth() {
+        return "test-auth";
+    }
 }

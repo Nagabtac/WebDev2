@@ -94,3 +94,57 @@ function deleteCar(id) {
         .then(() => fetchCars())
         .catch(err => console.error(err));
 }
+
+// Additional Fetch API Examples
+// Basic GET request example
+fetch("https://your-api.com/resource")
+    .then(response => response.json())   // Parse JSON data
+    .then(data => console.log(data))     // Use the data
+    .catch(error => console.error("Error:", error));
+
+// POST request example - Create new car
+const newCar = {
+    make: "Ford",
+    model: "Focus",
+    year: 2022,
+    color: "Black",
+    bodyType: "Sedan",
+    engineType: "Gasoline",
+    licensePlate: "ABC123"
+};
+
+fetch("http://localhost:1000/api/cars", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newCar)
+})
+    .then(res => res.json())
+    .then(data => console.log("Car created:", data))
+    .catch(error => console.error("Error creating car:", error));
+
+// PUT request example - Update existing car
+const updatedCar = {
+    make: "Honda",
+    model: "Civic",
+    year: 2023,
+    color: "White",
+    bodyType: "Sedan",
+    engineType: "Hybrid",
+    licensePlate: "XYZ789"
+};
+
+fetch("http://localhost:1000/api/cars/2", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updatedCar)
+})
+    .then(res => res.json())
+    .then(data => console.log("Car updated:", data))
+    .catch(error => console.error("Error updating car:", error));
+
+// DELETE request example - Delete car
+fetch("http://localhost:1000/api/cars/2", {
+    method: "DELETE"
+})
+    .then(() => console.log("Car deleted"))
+    .catch(error => console.error("Error deleting car:", error));
