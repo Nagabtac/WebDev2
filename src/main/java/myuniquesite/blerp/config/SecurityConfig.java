@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+// ✅ Import HttpStatus
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -13,14 +15,19 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+// ✅ Import HttpStatusEntryPoint
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import myuniquesite.blerp.config.JwtAuthenticationFilter;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 public class SecurityConfig {
+
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    
+
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -29,7 +36,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 
     @Bean
     public AuthenticationManager authManager(
@@ -41,51 +47,54 @@ public class SecurityConfig {
         return new ProviderManager(authProvider);
     }
 
-    /**
-     * API Security Filter Chain (JWT-based, Stateless)
-     * Higher priority (@Order(1)) - checked first
-     */
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/api/**") // Only apply to /api/** endpoints
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless API
+                .securityMatcher("/api/**")
+                .csrf(csrf -> csrf.disable()) // CSRF is disabled for API
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/api/auth/**").permitAll(); // Public auth endpoints
-                    auth.requestMatchers("/api/public/**").permitAll(); // Other public API endpoints
-                    auth.requestMatchers(HttpMethod.GET, "/api/cars/**").permitAll(); // Allow public read access
-                    auth.requestMatchers(HttpMethod.POST, "/api/cars/**").authenticated(); // Require auth for create
-                    auth.requestMatchers(HttpMethod.PUT, "/api/cars/**").authenticated(); // Require auth for update
-                    auth.requestMatchers(HttpMethod.DELETE, "/api/cars/**").authenticated(); // Require auth for delete
-                    //auth.requestMatchers("/api/admin/**").hasRole("ADMIN"); // Admin-only API
-                    //auth.requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN"); // User/Admin API
-                    auth.anyRequest().authenticated(); // All other API endpoints require authentication
+                    auth.requestMatchers("/api/login", "/api/register").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/api/cars/**").permitAll();
+                    auth.requestMatchers(HttpMethod.POST, "/api/cars/**").authenticated();
+                    auth.requestMatchers(HttpMethod.PUT, "/api/cars/**").authenticated();
+                    auth.requestMatchers(HttpMethod.DELETE, "/api/cars/**").authenticated();
+                    auth.anyRequest().authenticated();
                 })
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // ✅ FIX: Tell the API chain to return 401 on auth failure
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                )
                 .build();
     }
 
-    /**
-     * Web Security Filter Chain (Session-based)
-     * Lower priority (@Order(2)) - checked after API filter
-     */
     @Bean
     @Order(2)
     public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/**") // Apply to all other endpoints (web pages)
-                .csrf(withDefaults()) // Enable CSRF for session-based endpoints
+                .securityMatcher("/**")
+                .csrf(csrf -> csrf
+                        // Also ignore CSRF for API paths in this chain, just in case
+                        .ignoringRequestMatchers("/api/**")
+                )
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/", "/login", "/register", "/public/**",
-                            "/css/**", "/js/**", "/images/**").permitAll(); // Public web resources
-                    auth.anyRequest().authenticated(); // All other web pages require authentication
+                    auth.requestMatchers(
+                            "/", "/index", // Allow index explicitly if needed
+                            "/login", "/register",
+                            "/public/**",
+                            "/css/**", "/js/**", "/images/**",
+                            "/html/**", // Keeps allowing /static/html/*
+                            "/favicon.ico",
+                            "/jwt-client.html" // ✅ FIX: Explicitly permit access to jwt-client.html
+                            ).permitAll();
+                    auth.anyRequest().authenticated();
                 })
                 .formLogin(form -> form
-                        .loginPage("/login") // Custom login page
-                        .defaultSuccessUrl("/", true) // Redirect after successful login
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -94,9 +103,8 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)) // Session-based
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .build();
     }
 }
-
 

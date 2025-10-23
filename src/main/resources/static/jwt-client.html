@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Car View</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: auto; color: #333; }
+        .container { display: none; }
+        
+        /* --- Forms --- */
+        #login-form, #admin-actions-container { 
+            border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-bottom: 20px; background-color: #fcfcfc; 
+        }
+        #admin-actions-container { border-color: #d4edda; background-color: #f7fff9; }
+        #add-car-form { display: flex; flex-wrap: wrap; justify-content: flex-start; }
+        #add-car-form input, #edit-car-form input { 
+            width: calc(33.3% - 12px); /* 3 inputs per row */
+            margin-right: 5px; 
+            margin-bottom: 10px;
+        }
+        #add-car-form button, #edit-car-form button { width: 100%; margin-top: 5px; }
+
+        /* --- Table --- */
+        #car-list table { width: 100%; border-collapse: collapse; margin-top: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        #car-list th, #car-list td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        #car-list th { background-color: #f4f4f4; }
+        #car-list tr:nth-child(even) { background-color: #f9f9f9; }
+        #car-list tr:hover { background-color: #f1f1f1; }
+        
+        input { width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ccc; }
+        
+        /* --- Buttons --- */
+        button { padding: 8px 12px; border: none; background-color: #007bff; color: white; border-radius: 4px; cursor: pointer; margin-left: 5px; margin-bottom: 5px; }
+        button:hover { background-color: #0056b3; }
+        .edit-btn { background-color: #17a2b8; }
+        .edit-btn:hover { background-color: #138496; }
+        .delete-btn { background-color: #dc3545; font-size: 0.8em; padding: 5px 8px; }
+        .delete-btn:hover { background-color: #c82333; }
+        #logout-btn { background-color: #6c757d; float: right; }
+        #logout-btn:hover { background-color: #5a6268; }
+        #cancel-edit-btn { background-color: #6c757d; }
+        
+        #auth-status { margin-bottom: 15px; font-style: italic; color: #555; }
+        #status { margin-top: 15px; font-weight: bold; clear: both; }
+
+        /* --- Modal --- */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; z-index: 1; left: 0; top: 0;
+            width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; padding: 20px;
+            border: 1px solid #888;
+            width: 80%; max-width: 600px; border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>API Car View 🚗</h1>
+
+    <!-- Login Section -->
+    <div id="login-container" class="container">
+        <h2>Login to Manage Cars</h2>
+        <form id="login-form">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <!-- Admin Actions Section (Visible when logged in) -->
+    <div id="admin-actions-container" class="container">
+        <button id="logout-btn">Logout</button>
+        <h2>Admin Actions</h2>
+        <h3>Add New Car</h3>
+        <form id="add-car-form">
+            <input type="text" id="add-make" placeholder="Make" required>
+            <input type="text" id="add-model" placeholder="Model" required>
+            <input type="number" id="add-year" placeholder="Year" required>
+            <input type="text" id="add-color" placeholder="Color" required>
+            <input type="text" id="add-bodyType" placeholder="Body Type" required>
+            <input type="text" id="add-engineType" placeholder="Engine Type" required>
+            <input type="text" id="add-licensePlate" placeholder="License Plate" required>
+            <button type="submit">Add Car</button>
+        </form>
+        <span id="auth-status"></span> <!-- This span is now inside the admin container -->
+    </div>
+
+
+    <!-- Car List Container (Always Visible) -->
+    <div id="content-container">
+        <h2>Available Cars</h2>
+        <div id="car-list">
+            <p>Loading cars...</p>
+            <!-- Table will be generated here -->
+        </div>
+    </div>
+
+    <div id="status" style="clear: both;"></div>
+
+    <!-- Edit Car Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h2>Edit Car</h2>
+            <form id="edit-car-form">
+                <input type="hidden" id="edit-car-id">
+                <input type="text" id="edit-make" placeholder="Make" required>
+                <input type="text" id="edit-model" placeholder="Model" required>
+                <input type="number" id="edit-year" placeholder="Year" required>
+                <input type="text" id="edit-color" placeholder="Color" required>
+                <input type="text" id="edit-bodyType" placeholder="Body Type" required>
+                <input type="text" id="edit-engineType" placeholder="Engine Type" required>
+                <input type="text" id="edit-licensePlate" placeholder="License Plate" required>
+                <button type="submit">Save Changes</button>
+                <button type="button" id="cancel-edit-btn">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // DOM Elements
+        const loginContainer = document.getElementById('login-container');
+        const adminActionsContainer = document.getElementById('admin-actions-container'); // Renamed
+        const authStatusSpan = document.getElementById('auth-status');
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const carListDiv = document.getElementById('car-list');
+        const statusDiv = document.getElementById('status');
+
+        // Add Car Form
+        const addCarForm = document.getElementById('add-car-form');
+
+        // Edit Modal
+        const editModal = document.getElementById('edit-modal');
+        const editCarForm = document.getElementById('edit-car-form');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const editCarIdInput = document.getElementById('edit-car-id');
+
+
+        const API_BASE_URL = 'http://localhost:1000'; // Ensure this port matches your server
+
+        /**
+         * 1. On load, always fetch cars and update auth UI based on token presence.
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI(); // Show login or logout based on token
+            fetchAndDisplayCars(); // Always fetch cars
+        });
+
+        /**
+         * Updates the UI (login form vs admin panel) based on token presence.
+         */
+        function updateAuthUI() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                console.log('Token found:', token);
+                showAdminUI();
+            } else {
+                console.log('No token found.');
+                showLoginUI();
+            }
+        }
+
+        /**
+         * 2. Handle login via /api/login and 3. Store the token.
+         */
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            statusDiv.textContent = 'Logging in...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Login failed');
+
+                localStorage.setItem('token', data.token);
+                console.log('Token saved successfully.');
+                statusDiv.textContent = data.message;
+                updateAuthUI(); // Update UI to show admin panel
+                fetchAndDisplayCars(); // Re-fetch to show admin buttons
+
+            } catch (err) {
+                console.error('Login Error:', err.message);
+                statusDiv.textContent = `Error: ${err.message}`;
+                console.error(`Login failed: ${err.message}`);
+            }
+        });
+
+        /**
+         * Fetches cars (publicly accessible) and displays them.
+         */
+        async function fetchAndDisplayCars() {
+            statusDiv.textContent = 'Fetching cars...';
+            carListDiv.innerHTML = '<p>Loading...</p>'; // Clear previous content
+            const token = localStorage.getItem('token'); // Check if logged in to show buttons
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/cars`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || 'Failed to fetch cars: ' + response.status);
+                }
+
+                const cars = await response.json();
+                statusDiv.textContent = 'Cars loaded.';
+                renderCarTable(cars, token); // Pass token to decide on buttons
+
+            } catch (err) {
+                console.error('Fetch Cars Error:', err.message);
+                statusDiv.textContent = `Error fetching cars: ${err.message}`;
+                carListDiv.innerHTML = '<p>Error loading cars.</p>';
+            }
+        }
+
+        /**
+         * Renders the list of cars as a table.
+         * Only adds Edit/Delete buttons if a token is present.
+         */
+        function renderCarTable(cars, token) {
+            carListDiv.innerHTML = ''; // Clear loading/error message
+            if (!cars || cars.length === 0) {
+                carListDiv.innerHTML = '<p>No cars found.</p>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            const thead = document.createElement('thead');
+            const tbody = document.createElement('tbody');
+            const headerRow = document.createElement('tr');
+
+            // Assume consistent keys from the first car object for headers
+            const keys = Object.keys(cars[0]);
+            keys.forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()); // Format camelCase
+                headerRow.appendChild(th);
+            });
+            
+            const thAction = document.createElement('th');
+            thAction.textContent = 'Actions';
+            headerRow.appendChild(thAction);
+            thead.appendChild(headerRow);
+
+            // Add table body rows
+            cars.forEach(car => {
+                const tr = document.createElement('tr');
+                keys.forEach(key => {
+                    const td = document.createElement('td');
+                    td.textContent = car[key] !== null ? car[key] : 'N/A';
+                    tr.appendChild(td);
+                });
+
+                // Action cell - only add buttons if logged in
+                const tdAction = document.createElement('td');
+                if (token) {
+                    const editBtn = document.createElement('button');
+                    editBtn.textContent = 'Edit';
+                    editBtn.className = 'edit-btn';
+                    // Store all car data in dataset for editing
+                    Object.keys(car).forEach(key => {
+                        editBtn.dataset[key] = car[key];
+                    });
+                    editBtn.addEventListener('click', handleOpenEditModal);
+                    tdAction.appendChild(editBtn);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.dataset.id = car.id; // Use dataset for id
+                    deleteBtn.addEventListener('click', handleDeleteCar);
+                    tdAction.appendChild(deleteBtn);
+                }
+                tr.appendChild(tdAction);
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(thead);
+            table.appendChild(tbody);
+            carListDiv.appendChild(table);
+        }
+
+        /**
+         * PROTECTED: Handles "Add Car" form submission
+         */
+        addCarForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const token = localStorage.getItem('token');
+            if (!token) {
+                statusDiv.textContent = 'You must be logged in to add a car.';
+                logout(); // Log out if no token
+                return;
+            }
+
+            const carData = {
+                make: document.getElementById('add-make').value,
+                model: document.getElementById('add-model').value,
+                year: parseInt(document.getElementById('add-year').value, 10),
+                color: document.getElementById('add-color').value,
+                bodyType: document.getElementById('add-bodyType').value,
+                engineType: document.getElementById('add-engineType').value,
+                licensePlate: document.getElementById('add-licensePlate').value
+            };
+
+            statusDiv.textContent = 'Adding car...';
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/cars`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(carData)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        logout();
+                        statusDiv.textContent = "Session expired. Please log in again.";
+                        return;
+                    }
+                    throw new Error('Failed to add car');
+                }
+
+                statusDiv.textContent = `Car added successfully!`;
+                addCarForm.reset();
+                fetchAndDisplayCars(); // Refresh list
+
+            } catch (err) {
+                console.error('Add Car Error:', err.message);
+                statusDiv.textContent = `Error: ${err.message}`;
+            }
+        });
+
+
+        /**
+         * PROTECTED: Handles clicking the "Edit" button
+         */
+        function handleOpenEditModal(event) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error("Authentication required to edit. Please log in.");
+                statusDiv.textContent = "Authentication required. Please log in.";
+                logout();
+                return;
+            }
+
+            const car = event.target.dataset;
+            
+            // Populate the modal form
+            document.getElementById('edit-car-id').value = car.id;
+            document.getElementById('edit-make').value = car.make;
+            document.getElementById('edit-model').value = car.model;
+            document.getElementById('edit-year').value = car.year;
+            document.getElementById('edit-color').value = car.color;
+            document.getElementById('edit-bodyType').value = car.bodyType;
+            document.getElementById('edit-engineType').value = car.engineType;
+            document.getElementById('edit-licensePlate').value = car.licensePlate;
+
+            // Show the modal
+            editModal.style.display = 'block';
+        }
+
+        // Close modal when "Cancel" is clicked
+        cancelEditBtn.addEventListener('click', () => {
+            editModal.style.display = 'none';
+        });
+
+        /**
+         * PROTECTED: Handles "Edit Car" form submission (PUT request)
+         */
+        editCarForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const token = localStorage.getItem('token');
+            if (!token) {
+                statusDiv.textContent = 'You must be logged in to edit a car.';
+                logout();
+                return;
+            }
+
+            const carId = document.getElementById('edit-car-id').value;
+            const carData = {
+                make: document.getElementById('edit-make').value,
+                model: document.getElementById('edit-model').value,
+                year: parseInt(document.getElementById('edit-year').value, 10),
+                color: document.getElementById('edit-color').value,
+                bodyType: document.getElementById('edit-bodyType').value,
+                engineType: document.getElementById('edit-engineType').value,
+                licensePlate: document.getElementById('edit-licensePlate').value
+            };
+
+            statusDiv.textContent = `Updating car ID ${carId}...`;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/cars/${carId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(carData)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        logout();
+                        statusDiv.textContent = "Session expired. Please log in again.";
+                        return;
+                    }
+                    throw new Error('Failed to update car');
+                }
+
+                statusDiv.textContent = `Car ID ${carId} updated successfully!`;
+                editModal.style.display = 'none';
+                fetchAndDisplayCars(); // Refresh list
+
+            } catch (err) {
+                console.error('Update Car Error:', err.message);
+                statusDiv.textContent = `Error: ${err.message}`;
+            }
+        });
+
+
+        /**
+         * PROTECTED: Handles clicking the delete button.
+         */
+        async function handleDeleteCar(event) {
+            const carId = event.target.getAttribute('data-id');
+            const token = localStorage.getItem('token'); // Check if logged in
+
+            if (!carId) return;
+            if (!token) {
+                console.error("Authentication required to delete. Please log in.");
+                statusDiv.textContent = "Authentication required. Please log in.";
+                logout();
+                return;
+            }
+
+            console.log(`Are you sure you want to delete car ID ${carId}? This action requires login.`);
+            statusDiv.textContent = `Attempting to delete car ID ${carId}...`;
+
+            const headers = { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/cars/${carId}`, {
+                    method: 'DELETE',
+                    headers: headers // Send constructed headers
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        if (token) logout(); 
+                        console.error("Authentication required to delete. Please log in.");
+                        statusDiv.textContent = "Delete failed: Authentication required.";
+                        return;
+                    }
+                     const errorData = await response.json().catch(() => ({ message: 'Delete failed with status: ' + response.status }));
+                    throw new Error(errorData.message || `Delete failed: ${response.status}`);
+                }
+
+                statusDiv.textContent = `Car ID ${carId} deleted successfully!`;
+                console.log(`Car ID ${carId} deleted successfully.`);
+                 fetchAndDisplayCars(); // Re-fetch the list to show the change
+
+            } catch (err) {
+                console.error('Delete Car Error:', err.message);
+                statusDiv.textContent = `Error deleting car: ${err.message}`;
+                
+                if (!err.message.includes('401') && !err.message.includes('Authentication required')) {
+                     console.error(`Error deleting car: ${err.message}`);
+                }
+            }
+        }
+
+
+        /**
+         * 5. To logout, clear the token and update UI.
+         */
+        logoutBtn.addEventListener('click', logout);
+
+        function logout() {
+            localStorage.removeItem('token');
+            console.log('Token cleared.');
+            statusDiv.textContent = 'You have been logged out.';
+            updateAuthUI(); // Update UI to show login form
+            fetchAndDisplayCars(); // Re-fetch to remove admin buttons
+        }
+
+        // --- UI Helper Functions ---
+        function showLoginUI() {
+            loginContainer.style.display = 'block';
+            adminActionsContainer.style.display = 'none';
+        }
+
+        function showAdminUI() {
+            loginContainer.style.display = 'none';
+            adminActionsContainer.style.display = 'block';
+        }
+
+    </script>
+</body>
+</html>
+
