@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Car View (Simple)</title>
+    <title>API Car View</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: auto; color: #333; background-color: #f8f9fa; }
         h1, h2 { text-align: center; }
@@ -83,7 +83,7 @@
     </div>
 
     <script>
-        // !!! Sets the API endpoints, same as the React version.
+        // !!! Sets the API endpoints
         const apiBase = "http://localhost:1000/api/cars";
         const loginUrl = "http://localhost:1000/api/login";
 
@@ -103,7 +103,7 @@
             updateUI();
         });
 
-        // !!! Toggles view based on login status, like React's conditional rendering.
+        // !!! Toggles view based on login status
         function updateUI() {
             const token = localStorage.getItem('token');
             if (token) {
