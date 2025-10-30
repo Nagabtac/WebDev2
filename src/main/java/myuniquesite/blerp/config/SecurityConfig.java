@@ -1,10 +1,16 @@
 package myuniquesite.blerp.config;
 
+// ✅ 1. Import these new classes for CORS
+import java.util.List;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+// --- End of new imports ---
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-// ✅ Import HttpStatus
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -15,7 +21,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-// ✅ Import HttpStatusEntryPoint
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -52,7 +57,8 @@ public class SecurityConfig {
     public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .securityMatcher("/api/**")
-                .csrf(csrf -> csrf.disable()) // CSRF is disabled for API
+                .cors(withDefaults()) // ✅ 2. Enable CORS configuration for the API
+                .csrf(csrf -> csrf.disable()) 
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/api/login", "/api/register").permitAll();
                     auth.requestMatchers(HttpMethod.GET, "/api/cars/**").permitAll();
@@ -64,7 +70,6 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                // ✅ FIX: Tell the API chain to return 401 on auth failure
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
@@ -77,18 +82,17 @@ public class SecurityConfig {
         return http
                 .securityMatcher("/**")
                 .csrf(csrf -> csrf
-                        // Also ignore CSRF for API paths in this chain, just in case
                         .ignoringRequestMatchers("/api/**")
                 )
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers(
-                            "/", "/index", // Allow index explicitly if needed
+                            "/", "/index", 
                             "/login", "/register",
                             "/public/**",
                             "/css/**", "/js/**", "/images/**",
-                            "/html/**", // Keeps allowing /static/html/*
+                            "/html/**", 
                             "/favicon.ico",
-                            "/jwt-client.html" // ✅ FIX: Explicitly permit access to jwt-client.html
+                            "/jwt-client.html" 
                             ).permitAll();
                     auth.anyRequest().authenticated();
                 })
@@ -106,5 +110,25 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .build();
     }
-}
 
+    // ✅ 3. Add this new Bean to define your CORS settings
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // This is the list of frontend URLs that are allowed to make requests
+        // We add both 3000 (for Next.js) and 1000 (for your old HTML file)
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:1000"));
+        
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        
+        // ✅ 4. Apply these settings to all routes under /api/**
+        source.registerCorsConfiguration("/api/**", configuration);
+        
+        return source;
+    }
+}

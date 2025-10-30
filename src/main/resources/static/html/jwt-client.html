@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Car View (Simple)</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: auto; color: #333; background-color: #f8f9fa; }
+        h1, h2 { text-align: center; }
+        
+        /* --- Containers --- */
+        #login-container, #admin-container {
+            border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-bottom: 20px; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .container { display: none; } /* Hide all by default */
+
+        /* --- Forms --- */
+        form { display: flex; flex-direction: column; }
+        form input { padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ccc; }
+        
+        /* --- Table --- */
+        #car-list table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        #car-list th, #car-list td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        #car-list th { background-color: #f4f4f4; }
+        #car-list tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        /* --- Buttons --- */
+        button { padding: 10px 15px; border: none; background-color: #007bff; color: white; border-radius: 4px; cursor: pointer; margin-top: 5px; }
+        button:hover { background-color: #0056b3; }
+        .edit-btn { background-color: #ffc107; }
+        .edit-btn:hover { background-color: #e0a800; }
+        .delete-btn { background-color: #dc3545; }
+        .delete-btn:hover { background-color: #c82333; }
+        #logout-btn, #cancel-edit-btn { background-color: #6c757d; }
+        #logout-btn:hover, #cancel-edit-btn:hover { background-color: #5a6268; }
+
+        /* --- Modal --- */
+        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4); }
+        .modal-content { background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <h1>Car Inventory 🚗</h1>
+
+    <div id="login-container" class="container">
+        <h2>Please Log In</h2>
+        <form id="login-form">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Log In</button>
+        </form>
+    </div>
+
+    <div id="admin-container" class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Available Cars</h2>
+            <div>
+                <button id="add-car-btn">Add Car</button>
+                <button id="logout-btn">Logout</button>
+            </div>
+        </div>
+        <div id="car-list"><p>Loading cars...</p></div>
+    </div>
+
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="modal-title">Edit Car</h2>
+            <form id="edit-car-form">
+                <input type="hidden" id="edit-car-id">
+                <label>Make</label>
+                <input type="text" id="edit-make" placeholder="Make" required>
+                <label>Model</label>
+                <input type="text" id="edit-model" placeholder="Model" required>
+                <label>Year</label>
+                <input type="number" id="edit-year" placeholder="Year" required>
+                <label>Color</label>
+                <input type="text" id="edit-color" placeholder="Color" required>
+                <button type="submit">Save</button>
+                <button type="button" id="cancel-edit-btn">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // !!! Sets the API endpoints, same as the React version.
+        const apiBase = "http://localhost:1000/api/cars";
+        const loginUrl = "http://localhost:1000/api/login";
+
+        const loginContainer = document.getElementById('login-container');
+        const adminContainer = document.getElementById('admin-container');
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const carListDiv = document.getElementById('car-list');
+        const addCarBtn = document.getElementById('add-car-btn');
+
+        const editModal = document.getElementById('edit-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const editCarForm = document.getElementById('edit-car-form');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI();
+        });
+
+        // !!! Toggles view based on login status, like React's conditional rendering.
+        function updateUI() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                loginContainer.style.display = 'none';
+                adminContainer.style.display = 'block';
+                fetchCars(token);
+            } else {
+                loginContainer.style.display = 'block';
+                adminContainer.style.display = 'none';
+            }
+        }
+
+        // !!! Handles user login, gets and saves the auth token.
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(loginUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) throw new Error('Invalid credentials');
+                
+                const data = await response.json();
+                localStorage.setItem('token', data.token);
+                updateUI();
+            } catch (err) {
+                alert("Login failed. Please check your credentials.");
+            }
+        });
+
+        // !!! Clears the user's token to log them out.
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            carListDiv.innerHTML = "";
+            updateUI();
+        });
+
+        // !!! Fetches the list of cars from the API using the token.
+        async function fetchCars(token) {
+            try {
+                const response = await fetch(apiBase, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const cars = await response.json();
+                carListDiv._cars = cars; 
+                renderCarTable(cars);
+            } catch (error) {
+                console.error('Failed to fetch cars:', error);
+                carListDiv.innerHTML = '<p>Error loading cars.</p>';
+            }
+        }
+
+        // !!! Creates the car list from data, like React's .map() function.
+        function renderCarTable(cars) {
+            if (!cars || cars.length === 0) {
+                carListDiv.innerHTML = '<p>No cars found.</p>';
+                return;
+            }
+            const table = `
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Make</th>
+                            <th>Model</th>
+                            <th>Year</th>
+                            <th>Color</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${cars.map((car, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${car.make}</td>
+                                <td>${car.model}</td>
+                                <td>${car.year}</td>
+                                <td>${car.color}</td>
+                                <td>
+                                    <button class="edit-btn" data-id="${car.id}">Edit</button>
+                                    <button class="delete-btn" data-id="${car.id}">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            carListDiv.innerHTML = table;
+        }
+
+        // !!! Listens for clicks on edit/delete buttons inside the table.
+        carListDiv.addEventListener('click', (e) => {
+            const carId = e.target.dataset.id;
+            if (e.target.classList.contains('edit-btn')) {
+                const car = carListDiv._cars.find(c => c.id == carId);
+                openEditModal(car);
+            }
+            if (e.target.classList.contains('delete-btn')) {
+                deleteCar(carId);
+            }
+        });
+
+        // !!! Opens the modal for creating a new car.
+        addCarBtn.addEventListener('click', () => {
+            modalTitle.textContent = "Add Car";
+            editCarForm.reset();
+            document.getElementById('edit-car-id').value = '';
+            editModal.style.display = 'block';
+        });
+        
+        // !!! Opens the modal and fills it with the data of the car to be edited.
+        function openEditModal(car) {
+            modalTitle.textContent = "Edit Car";
+            document.getElementById('edit-car-id').value = car.id;
+            document.getElementById('edit-make').value = car.make;
+            document.getElementById('edit-model').value = car.model;
+            document.getElementById('edit-year').value = car.year;
+            document.getElementById('edit-color').value = car.color;
+            editModal.style.display = 'block';
+        }
+
+        // !!! Saves a new car (POST) or updates an existing one (PUT).
+        editCarForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const carId = document.getElementById('edit-car-id').value;
+            const isEditing = !!carId;
+
+            const carData = {
+                make: document.getElementById('edit-make').value,
+                model: document.getElementById('edit-model').value,
+                year: parseInt(document.getElementById('edit-year').value, 10),
+                color: document.getElementById('edit-color').value
+            };
+
+            const method = isEditing ? 'PUT' : 'POST';
+            const url = isEditing ? `${apiBase}/${carId}` : apiBase;
+
+            try {
+                await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(carData)
+                });
+                editModal.style.display = 'none';
+                updateUI();
+            } catch (error) {
+                alert('Failed to save car.');
+            }
+        });
+
+        // !!! Deletes a car after user confirmation.
+        async function deleteCar(id) {
+            if (!confirm("Delete this car?")) return;
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`${apiBase}/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                updateUI();
+            } catch (error) {
+                alert('Failed to delete car.');
+            }
+        }
+        
+        cancelEditBtn.addEventListener('click', () => {
+            editModal.style.display = 'none';
+        });
+
+        window.onclick = function(event) {
+            if (event.target == editModal) {
+                editModal.style.display = "none";
+            }
+        }
+    </script>
+
+</body>
+</html>
