@@ -68,8 +68,10 @@ public class SecurityConfig {
                                         auth.requestMatchers(HttpMethod.POST, "/api/cars/**").permitAll(); // ✅ POST is
                                                                                                            // now
                                                                                                            // allowed
-                                        auth.requestMatchers(HttpMethod.PUT, "/api/cars/**").authenticated();
-                                        auth.requestMatchers(HttpMethod.DELETE, "/api/cars/**").authenticated();
+                                        auth.requestMatchers(HttpMethod.PUT, "/api/cars/**").permitAll(); // ✅ PUT is
+                                                                                                          // now allowed
+                                        auth.requestMatchers(HttpMethod.DELETE, "/api/cars/**").permitAll(); // ✅ DELETE is
+                                                                                                             // now allowed
                                         auth.anyRequest().authenticated();
                                 })
                                 .sessionManagement(session -> session
@@ -119,11 +121,19 @@ public class SecurityConfig {
 
                 // This is the list of frontend URLs that are allowed to make requests
                 // We add both 3000 (for Next.js) and 1000 (for your old HTML file)
-                configuration.setAllowedOrigins(List.of("*"));
+                // Note: When allowCredentials is true, you cannot use "*" - must specify exact origins
+                configuration.setAllowedOrigins(List.of(
+                                "http://localhost:3000",
+                                "http://127.0.0.1:3000",
+                                "http://localhost:5500",
+                                "http://127.0.0.1:5500",
+                                "http://localhost:1000",
+                                "http://127.0.0.1:1000"));
 
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 configuration.setAllowedHeaders(List.of("*"));
                 configuration.setAllowCredentials(true);
+                configuration.setMaxAge(3600L); // Cache preflight response for 1 hour
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
